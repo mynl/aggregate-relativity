@@ -4,7 +4,7 @@ build-backend = "setuptools.build_meta"
 
 [project]
 name = "aggregate-relativity"
-version = "0.1.0"
+version = "0.2.0"
 description = "Relative pricing of a reinsurance program, as an aggregate plugin: each cover scored against the gross book under four distortion families."
 readme = "README.md"
 requires-python = ">=3.13"
@@ -21,11 +21,11 @@ classifiers = [
     "Topic :: Scientific/Engineering :: Mathematics",
 ]
 dependencies = [
-    # The library this plugin extends. aggregate.plugins arrived at 1.0.0a376
-    # and aggregate.exhibits.register_exhibit at a378, both of which this
-    # package registers through, so the floor is a378 and there is no release
-    # on PyPI that carries either: see [tool.uv.sources].
-    "aggregate>=1.0.0a378",
+    # The library this plugin extends. aggregate.plugins arrived at 1.0.0a376,
+    # aggregate.exhibits.register_exhibit at a378, and the `matrix` panel kind
+    # this chart draws on at a379 with its off-scale fix at a380, so the floor
+    # is a380. No release on PyPI carries any of them: see [tool.uv.sources].
+    "aggregate>=1.0.0a380",
     "pandas>=2.0",
 ]
 

@@ -10,12 +10,12 @@
 
 ## Live
 
-- **[Relativity-Chart]** the matrix and spectrum page as a chart. The exhibit
-  landed at `0.1.0` and the chart needs the categorical matrix panel the library
-  adds at `1.0.0a379`: named categorical rows against named categorical columns,
-  two texts per cell (the multiple, and the actual beneath it), and a diverging
-  scale with a hard neutral band at plus or minus five percent. The right-hand
-  distortion spectrum is an ordinary `xy` panel and needs nothing new.
+- **[Relativity-Chart]** DONE (`0.2.0`): the matrix is a chart, on the library's
+  new `matrix` panel kind (`aggregate` `1.0.0a379`, with the off-scale ratio fix
+  at `a380`). **Still open: the right-hand distortion spectrum.** The original
+  page is two panels side by side and only the left one is built. The spectrum
+  is an ordinary `xy` panel over `g(s)` per family and needs no new IR at all,
+  so it is a `ChartSeries` per family and a second `Panel` in the same document.
 
 - **[Reference-Data-Duplicate]** `reference/data/grid (1).csv` is a
   browser-download sibling of `grid.csv` and the two **differ**, so one of them

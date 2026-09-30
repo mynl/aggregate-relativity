@@ -21,6 +21,7 @@ from importlib.metadata import entry_points
 
 import pytest
 from aggregate import build, plugins
+from aggregate.charts import CHARTS, available_charts
 from aggregate.exhibits import (
     EXHIBITS, Perspective, available_exhibits, exhibit_frames,
 )
@@ -47,8 +48,9 @@ def _load():
 
 
 def _forget():
-    """Drop the plugin's registry key. A test's privilege, not an API."""
+    """Drop the plugin's registry keys. A test's privilege, not an API."""
     EXHIBITS.pop(NAME, None)
+    CHARTS.pop(register_module.CHART_NAME, None)
 
 
 @pytest.fixture(scope='module')
@@ -82,15 +84,19 @@ def test_load_registers_the_exhibit_and_attributes_it(capstone_pnl):
         assert plugin.name == 'relativity' and plugin.source == 'entry_point'
         assert plugin.version == '0.1.0'
         assert plugin.exhibits == (NAME,)
-        assert plugin.charts == ()
+        assert plugin.charts == (register_module.CHART_NAME,)
 
-        leaf, = plugin.leaves
-        assert leaf.name == NAME and leaf.kind == 'exhibit'
-        assert leaf.label == register_module.TITLE
-        assert leaf.why == register_module.WHY
+        table, picture = plugin.leaves
+        assert table.name == NAME and table.kind == 'exhibit'
+        assert picture.name == register_module.CHART_NAME
+        assert picture.kind == 'chart'
+        for leaf in plugin.leaves:
+            assert leaf.label == register_module.TITLE
+            assert leaf.why == register_module.WHY
 
         names = [n for n, _ in available_exhibits(capstone_pnl)]
         assert NAME in names
+        assert register_module.CHART_NAME in available_charts(capstone_pnl)
 
         block, frame, kw = exhibit_frames(capstone_pnl, NAME)[0]
         assert block == NAME
@@ -124,6 +130,7 @@ def test_the_leaf_is_dark_on_a_plain_pnl():
     try:
         assert _load()[0].ok
         assert NAME not in [n for n, _ in available_exhibits(plain)]
+        assert register_module.CHART_NAME not in available_charts(plain)
         assert register_module._perspectives(plain) == []
     finally:
         _forget()
@@ -135,5 +142,6 @@ def test_the_leaf_is_dark_on_an_aggregate():
     try:
         assert _load()[0].ok
         assert NAME not in [n for n, _ in available_exhibits(dice)]
+        assert register_module.CHART_NAME not in available_charts(dice)
     finally:
         _forget()
