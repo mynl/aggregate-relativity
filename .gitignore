@@ -1,0 +1,31 @@
+# Python
+__pycache__/
+*.py[cod]
+*.egg-info/
+build/
+dist/
+.pytest_cache/
+.ruff_cache/
+.testmondata
+
+# Environments. The venv lives on the dev drive and is reached by
+# UV_PROJECT_ENVIRONMENT, so nothing about it belongs in the tree. No trailing
+# slash: the pattern must match a directory, a file and a junction alike.
+.venv
+.env
+
+# Data firewall: no real data in the repository, ever.
+*.csv
+*.parquet
+*.xlsx
+*.db
+*.sqlite
+*.local.yaml
+*.log
+
+# ... with one exemption, deliberately. reference/data/ holds the approved output
+# of the two synthetic DecL programs in tests/programs.py, and those files are
+# the golden regression the port is checked against, so they are fixtures rather
+# than data and they must be tracked. Every number in them is invented for the
+# example.
+!reference/data/*.csv

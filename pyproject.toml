@@ -1,0 +1,62 @@
+[build-system]
+requires = ["setuptools>=70", "wheel"]
+build-backend = "setuptools.build_meta"
+
+[project]
+name = "aggregate-relativity"
+version = "0.1.0"
+description = "Relative pricing of a reinsurance program, as an aggregate plugin: each cover scored against the gross book under four distortion families."
+readme = "README.md"
+requires-python = ">=3.13"
+authors = [
+    {name = "Stephen J. Mildenhall", email = "steve@convexrisk.com"},
+]
+classifiers = [
+    "Development Status :: 3 - Alpha",
+    "Intended Audience :: Financial and Insurance Industry",
+    "Programming Language :: Python :: 3",
+    "Programming Language :: Python :: 3.13",
+    "Programming Language :: Python :: 3.14",
+    "Topic :: Office/Business :: Financial",
+    "Topic :: Scientific/Engineering :: Mathematics",
+]
+dependencies = [
+    # The library this plugin extends. aggregate.plugins arrived at 1.0.0a376
+    # and aggregate.exhibits.register_exhibit at a378, both of which this
+    # package registers through, so the floor is a378 and there is no release
+    # on PyPI that carries either: see [tool.uv.sources].
+    "aggregate>=1.0.0a378",
+    "pandas>=2.0",
+]
+
+[project.optional-dependencies]
+dev = ["pytest>=7", "ruff"]
+
+# The plugin contract. One zero-argument callable; aggregate.plugins.load()
+# resolves and calls it, and nothing runs on import.
+[project.entry-points."aggregate.plugins"]
+relativity = "aggregate_relativity.register:register"
+
+# aggregate's 1.0.0a line is not on PyPI (releases stop at 0.30.1), so the
+# dependency must be an editable path source during co-development. Relative,
+# never a drive letter: a clone needs aggregate_REFACTOR checked out at the same
+# place relative to this repo.
+[tool.uv.sources]
+aggregate = { path = "../../worktrees/aggregate_REFACTOR", editable = true }
+
+[tool.setuptools]
+package-dir = {"" = "src"}
+packages = ["aggregate_relativity"]
+
+[tool.pytest.ini_options]
+testpaths = ["tests"]
+addopts = "-ra --strict-markers"
+markers = [
+    "golden: compares against the approved reference output in reference/data.",
+]
+
+[tool.ruff]
+line-length = 100
+
+[tool.ruff.lint]
+select = ["F"]
