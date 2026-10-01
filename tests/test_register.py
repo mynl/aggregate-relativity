@@ -51,6 +51,7 @@ def _forget():
     """Drop the plugin's registry keys. A test's privilege, not an API."""
     EXHIBITS.pop(NAME, None)
     CHARTS.pop(register_module.CHART_NAME, None)
+    CHARTS.pop(register_module.SPECTRUM_NAME, None)
 
 
 @pytest.fixture(scope='module')
@@ -84,19 +85,26 @@ def test_load_registers_the_exhibit_and_attributes_it(capstone_pnl):
         assert plugin.name == 'relativity' and plugin.source == 'entry_point'
         assert plugin.version == '0.1.0'
         assert plugin.exhibits == (NAME,)
-        assert plugin.charts == (register_module.CHART_NAME,)
+        assert set(plugin.charts) == {register_module.CHART_NAME,
+                                      register_module.SPECTRUM_NAME}
 
-        table, picture = plugin.leaves
-        assert table.name == NAME and table.kind == 'exhibit'
-        assert picture.name == register_module.CHART_NAME
-        assert picture.kind == 'chart'
+        table, grid, picture = plugin.leaves
+        assert (table.name, table.kind, table.label) == (NAME, 'exhibit', 'Table')
+        assert (grid.name, grid.kind, grid.label) == (
+            register_module.CHART_NAME, 'chart', 'Grid')
+        assert (picture.name, picture.kind, picture.label) == (
+            register_module.SPECTRUM_NAME, 'chart', 'Chart')
+        # One word each, and all different: they sit in a row and the group is
+        # already called Lab.
+        labels = [leaf.label for leaf in plugin.leaves]
+        assert len(set(labels)) == 3
         for leaf in plugin.leaves:
-            assert leaf.label == register_module.TITLE
             assert leaf.why == register_module.WHY
 
         names = [n for n, _ in available_exhibits(capstone_pnl)]
         assert NAME in names
         assert register_module.CHART_NAME in available_charts(capstone_pnl)
+        assert register_module.SPECTRUM_NAME in available_charts(capstone_pnl)
 
         block, frame, kw = exhibit_frames(capstone_pnl, NAME)[0]
         assert block == NAME

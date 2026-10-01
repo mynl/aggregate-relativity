@@ -8,6 +8,14 @@ The one thing that is stable in practice is `aggregate_relativity.derive`, which
 
 ---
 
+## 0.3.0
+
+**[Relativity-Spectrum] the second half of the original page: the distortion spectrum.** `chart.spectrum_chart_doc(pnl, base='gross'|'net')` emits an `xy` panel with the four families on a named category axis in the gross book's own order, the multiple on a log axis, one curve per position and a faint mark at 1.0. Registered as the `relativity_spectrum` chart. Where the grid answers "what is this cover's verdict", this answers "does the verdict survive the choice of family": a line that stays on one side of the base does, and one that crosses does not. On `Capstone.PnL` the `3x2` and `5x5` layers cross between `wang` and `dual`, so theirs do not.
+
+Needed **no new panel kind**: the families are an ordered category axis and the multiples are a quantity on a log scale, both of which the chart IR has carried since 1.0. It did want `ChartAxis.categories` (`aggregate` `1.0.0a381`) to name the ticks, without which they read 0, 1, 2, 3.
+
+**The three leaves are now `Table`, `Grid` and `Chart`**, which were all called `Relativity`, so the Lab sub-tab row said one word three times. The y axis of the grid carries no name: the row names are position names and saying so above them is a caption on a caption.
+
 ## 0.2.0
 
 **[Relativity-Chart] the page is now a chart as well as a table.** `chart.relativity_chart_doc(pnl, base='gross'|'net')` emits a one-panel `ChartDoc` of kind `matrix`: each position against each reading as a multiple of the base, with the position's own number beneath it, on a diverging scale neutral within five percent of the base. `register()` registers it as the `relativity` chart beside the `relativity` exhibit, which do not collide because charts and exhibits are separate registries, and returns both leaves. The chart's availability gate is the exhibit's, written once, so a P&L cannot light the table and not the picture.

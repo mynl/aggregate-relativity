@@ -24,7 +24,9 @@ the provisional tier exists for. See the library's
 ``dev/done/plan-a376-plugins-and-extension-surface.md`` section 12.
 """
 
-from aggregate.charts import ChartAxis, ChartDoc, ChartSeries, MatrixData, Panel
+from aggregate.charts import (
+    ChartAxis, ChartDoc, ChartSeries, Mark, MatrixData, Panel,
+)
 
 from . import derive
 
@@ -125,7 +127,9 @@ def relativity_chart_doc(pnl, base='gross'):
         title=f'Relativity: {getattr(pnl, "name", "")}, {base} base',
         axes=(
             ChartAxis(id='reading', label='reading', kind='category'),
-            ChartAxis(id='position', label='position', kind='category'),
+            # No label: the row names are position names and saying so
+            # above them is a caption on a caption.
+            ChartAxis(id='position', label='', kind='category'),
             ChartAxis(id='multiple', label=f'multiple of the {base_label}'),
         ),
         panels=(Panel(id='relativity', kind='matrix', x_axis='reading',
@@ -140,3 +144,106 @@ def relativity_chart_doc(pnl, base='gross'):
 def _is_missing(value):
     """True for a value the matrix has no number for."""
     return value is None or value != value
+
+
+#: How the two reference books are drawn, against the covers between them. The
+#: roles are the library's own series vocabulary, so a renderer that knows
+#: nothing about this plugin still knows which curve is the book and which is a
+#: cession.
+_TIER_ROLES = {
+    'book': None,                       # resolved per label, below
+    'occurrence': 'ceded',
+    'occurrence_package': 'ceded',
+    'aggregate': 'ceded',
+    'aggregate_package': 'ceded',
+}
+
+
+def _series_role(label, tier):
+    """The library series role for one position's curve."""
+    if tier != 'book':
+        return _TIER_ROLES[tier]
+    return 'gross' if label == 'gross book' else 'net'
+
+
+def spectrum_chart_doc(pnl, base='gross'):
+    """The distortion spectrum: every position's relativity across the families.
+
+    The companion to :func:`relativity_chart_doc`, and the right-hand panel of
+    the original page. Where the matrix answers "what is this cover's verdict",
+    this answers "does the verdict survive the choice of distortion family", by
+    putting all four families on one axis and drawing each position's line
+    across them. A line that stays on one side of the base is a verdict that
+    does not depend on the family; one that crosses is a verdict that does.
+
+    Parameters
+    ----------
+    pnl : aggregate.PnL
+        An extended P&L.
+    base : {'gross', 'net'}, default 'gross'
+        Which book anchors the ratios, and therefore where the reference line
+        at 1.0 sits.
+
+    Returns
+    -------
+    aggregate.charts.ChartDoc
+        One ``xy`` panel: the families on a category axis in the order the gross
+        book ranks them, the multiple on a log axis, one curve per position, and
+        a mark at 1.0.
+
+    Notes
+    -----
+    Needs **no new panel kind**. The families are an ordered category axis and
+    the multiples are a quantity on a log scale, both of which the chart IR has
+    carried since 1.0. That is the whole reason this panel is cheap and the
+    matrix was not.
+
+    The y axis is read on **log** by default, because these are ratios: a cover
+    at 2x and one at 0.5x are equally far from the base in opposite directions,
+    and only a log scale draws them that way. The original page used
+    ``arctan(log(y))``, which compresses the far tails further still; log is the
+    honest part of that and the compression was a fitting device.
+
+    The ordering of the families is the gross book's own, cheapest first, so the
+    x axis is a genuine severity ordering rather than an alphabet. Nothing lives
+    *between* two families, which is what ``support='atomic'`` says; the line a
+    renderer draws across them is a trend, and the points are the readings.
+    """
+    gini, _ = derive.source_frames(pnl)
+    order = derive.distortion_order(gini)
+    actuals = derive.actuals_frame(pnl)
+    matrix = derive.relativity_frame(actuals, base=base)
+    families = [f'gini {d}' for d in order]
+    tiers = {row.label: row.tier for row in derive.position_rows(gini)}
+    x = tuple(float(i) for i in range(len(order)))
+
+    series = tuple(
+        ChartSeries(
+            name=label,
+            role=_series_role(label, tiers.get(label, 'book')),
+            panel_id='spectrum',
+            x=x,
+            y=tuple(float(matrix.loc[label, f]) for f in families),
+        )
+        for label in matrix.index)
+
+    base_label = 'gross book' if base == 'gross' else 'final net'
+    return ChartDoc(
+        name='relativity_spectrum',
+        title=f'Distortion spectrum: {getattr(pnl, "name", "")}, {base} base',
+        axes=(
+            # The families named on the axis, in the gross book's own order.
+            # Without them the ticks read 0, 1, 2, 3.
+            ChartAxis(id='family', label='distortion family', kind='category',
+                      categories=tuple(order)),
+            ChartAxis(id='multiple', label=f'multiple of the {base_label}',
+                      scale='log', scales=('log', 'linear')),
+        ),
+        panels=(Panel(id='spectrum', kind='xy', x_axis='family',
+                      y_axis='multiple', read_axis='x',
+                      title='Does the verdict survive the family?'),),
+        series=series,
+        marks=(Mark(panel_id='spectrum', orient='h', at=1.0,
+                    label=base_label, faint=True),),
+        meta={'base': base},
+    )

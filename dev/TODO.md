@@ -12,10 +12,13 @@
 
 - **[Relativity-Chart]** DONE (`0.2.0`): the matrix is a chart, on the library's
   new `matrix` panel kind (`aggregate` `1.0.0a379`, with the off-scale ratio fix
-  at `a380`). **Still open: the right-hand distortion spectrum.** The original
-  page is two panels side by side and only the left one is built. The spectrum
-  is an ordinary `xy` panel over `g(s)` per family and needs no new IR at all,
-  so it is a `ChartSeries` per family and a second `Panel` in the same document.
+  at `a380`).
+
+- **[Relativity-Spectrum]** DONE (`0.3.0`): the original page's right-hand panel,
+  as its own `relativity_spectrum` chart rather than a second panel on the grid.
+  Two leaves rather than one because the two answer different questions and a
+  reader wants each at full width. Needed no new panel kind, only
+  `ChartAxis.categories` (`aggregate` `1.0.0a381`) to name the family ticks.
 
 - **[Reference-Data-Duplicate]** `reference/data/grid (1).csv` is a
   browser-download sibling of `grid.csv` and the two **differ**, so one of them

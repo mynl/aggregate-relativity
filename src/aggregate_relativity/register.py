@@ -27,12 +27,25 @@ from . import chart, derive
 #: machinery it was computed from, and ``relativity`` says what the page shows.
 EXHIBIT_NAME = 'relativity'
 
-#: The chart's registry key. The same word as the exhibit, and they do not
-#: collide: charts and exhibits are separate registries, and the library itself
-#: has a ``reins`` in both. One name for one document read two ways.
+#: The matrix chart's registry key. The same word as the exhibit, and they do
+#: not collide: charts and exhibits are separate registries, and the library
+#: itself has a ``reins`` in both. One name for one document read two ways.
 CHART_NAME = 'relativity'
 
+#: The spectrum chart's key. Its own document rather than a second panel on the
+#: matrix: the two answer different questions and a reader wants one at a time
+#: at full width, which is also why they are two leaves rather than one.
+SPECTRUM_NAME = 'relativity_spectrum'
+
 TITLE = 'Relativity'
+
+#: What each leaf's pill says. One word each: they sit in a row, and the group
+#: is already called Lab and the plugin already called Relativity, so repeating
+#: either on every pill says nothing. The three are what the reader is choosing
+#: between: the numbers, the numbers laid out and colored, and the trend.
+EXHIBIT_LABEL = 'Table'
+CHART_LABEL = 'Grid'
+SPECTRUM_LABEL = 'Chart'
 
 CAPTION = (
     'Each cover priced against the gross book, under four distortion families '
@@ -90,6 +103,19 @@ def _chart_relativity(pnl, base='gross', **options):
     return chart.relativity_chart_doc(pnl, base=base)
 
 
+@singledispatch
+def chart_relativity_spectrum(obj, **options):
+    """The base of the spectrum emitter: a type this chart does not serve."""
+    raise NotImplementedError(
+        f'chart {SPECTRUM_NAME!r} is not implemented for {type(obj).__name__}')
+
+
+@chart_relativity_spectrum.register(PnL)
+def _chart_relativity_spectrum(pnl, base='gross', **options):
+    """Every position's relativity across the four distortion families."""
+    return chart.spectrum_chart_doc(pnl, base=base)
+
+
 def _can_chart(obj):
     """The chart's availability gate: the same question the exhibit asks.
 
@@ -126,11 +152,17 @@ def register():
     register_exhibit(EXHIBIT_NAME, TITLE, _relativity_frames, [PnL],
                      predicate=_perspectives)
     register_chart(CHART_NAME, chart_relativity, predicate=_can_chart)
+    register_chart(SPECTRUM_NAME, chart_relativity_spectrum,
+                   predicate=_can_chart)
     return [
-        PluginLeaf(name=EXHIBIT_NAME, kind='exhibit', label=TITLE,
-                   hint='each cover priced against the gross book',
+        PluginLeaf(name=EXHIBIT_NAME, kind='exhibit', label=EXHIBIT_LABEL,
+                   hint='each position with its own numbers, which is what '
+                        'the grid is built from',
                    why=WHY),
-        PluginLeaf(name=CHART_NAME, kind='chart', label=TITLE,
-                   hint='the same page as a matrix, on a diverging scale',
+        PluginLeaf(name=CHART_NAME, kind='chart', label=CHART_LABEL,
+                   hint='each cover against the book, on a diverging scale',
+                   why=WHY),
+        PluginLeaf(name=SPECTRUM_NAME, kind='chart', label=SPECTRUM_LABEL,
+                   hint='does the verdict survive the choice of family?',
                    why=WHY),
     ]

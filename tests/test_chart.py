@@ -188,3 +188,80 @@ def test_an_aggregate_is_not_dispatched():
     dice = build('agg ChartDice dfreq [3] dsev [1:6]')
     with pytest.raises(NotImplementedError, match='not implemented for Aggregate'):
         chart_relativity(dice)
+
+
+# --- the distortion spectrum -------------------------------------------------
+
+@pytest.fixture(scope='module')
+def spectrum(pnl):
+    return chart.spectrum_chart_doc(pnl)
+
+
+def test_the_spectrum_is_one_xy_panel(spectrum):
+    """It needed no new panel kind, which is why it was cheap."""
+    panel, = spectrum.panels
+    assert panel.kind == 'xy'
+    assert spectrum.name == 'relativity_spectrum'
+
+
+def test_the_families_are_named_on_the_axis(spectrum, pnl):
+    """Without the names the ticks read 0, 1, 2, 3."""
+    gini, _ = derive.source_frames(pnl)
+    family = next(a for a in spectrum.axes if a.id == 'family')
+    assert family.kind == 'category'
+    assert list(family.categories) == derive.distortion_order(gini)
+
+
+def test_the_multiple_is_read_on_log(spectrum):
+    """These are ratios: 2x and 0.5x are equally far from the base."""
+    multiple = next(a for a in spectrum.axes if a.id == 'multiple')
+    assert multiple.scale == 'log'
+    assert 'linear' in multiple.scales
+
+
+def test_one_curve_per_position(spectrum, pnl):
+    actuals = derive.actuals_frame(pnl)
+    assert [s.name for s in spectrum.series] == list(actuals.index)
+    for s in spectrum.series:
+        assert len(s.x) == 4 and len(s.y) == 4
+
+
+def test_the_curves_carry_the_matrix_numbers(spectrum, pnl):
+    """The spectrum and the grid are one computation read two ways."""
+    matrix = derive.relativity_frame(derive.actuals_frame(pnl))
+    families = [c for c in matrix.columns if c.startswith('gini ')]
+    for s in spectrum.series:
+        expected = [matrix.loc[s.name, f] for f in families]
+        assert list(s.y) == pytest.approx(expected)
+
+
+def test_the_books_carry_their_own_roles(spectrum):
+    """So a renderer that knows nothing about this plugin still knows which
+    curve is the book and which is a cession."""
+    roles = {s.name: s.role for s in spectrum.series}
+    assert roles['gross book'] == 'gross'
+    assert roles['final net'] == 'net'
+    assert roles['QS'] == 'ceded'
+
+
+def test_the_base_line_is_marked(spectrum):
+    mark, = spectrum.marks
+    assert mark.orient == 'h' and mark.at == 1.0
+    assert mark.faint is True
+
+
+def test_the_gross_book_is_flat_at_one(spectrum):
+    curve = next(s for s in spectrum.series if s.name == 'gross book')
+    assert list(curve.y) == pytest.approx([1.0] * 4)
+
+
+def test_the_spectrum_round_trips(spectrum):
+    from aggregate.charts.ir import stamp
+    stamped = stamp(spectrum)
+    assert load_chart_doc(canonical_dict(stamped)) == stamped
+
+
+def test_the_net_base_flattens_the_final_net(pnl):
+    doc = chart.spectrum_chart_doc(pnl, base='net')
+    curve = next(s for s in doc.series if s.name == 'final net')
+    assert list(curve.y) == pytest.approx([1.0] * 4)

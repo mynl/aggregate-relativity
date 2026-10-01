@@ -4,7 +4,7 @@ Relative pricing of a reinsurance program, as an [`aggregate`](https://github.co
 
 For each cover an extended P&L's program buys, is it priced above or below the book's own acceptability? A position's `gini_p` is the distortion parameter at which that position breaks even, so a layer whose `gini_p` sits above the gross book's is priced above what the holder would itself charge, and buying it lowers the net. The page reads every position under four distortion families and three point estimates, which is how a verdict that survives the choice of family is told from one that depends on it.
 
-The plugin contributes documents to `aggregate` and nothing else: one exhibit, and (from 0.2.0) one chart. They appear in the `aggregate-api` app under its Lab tab with no change to either project. Installing this package adds the leaves; uninstalling removes them.
+The plugin contributes documents to `aggregate` and nothing else: one exhibit (`Table`) and two charts (`Grid`, the matrix, and `Chart`, the distortion spectrum). They appear in the `aggregate-api` app under its Lab tab with no change to either project. Installing this package adds the leaves; uninstalling removes them.
 
 ## Install
 
