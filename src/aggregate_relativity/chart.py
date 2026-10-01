@@ -95,7 +95,7 @@ def relativity_chart_doc(pnl, base='gross'):
     matrix = derive.relativity_frame(actuals, base=base)
     columns = list(matrix.columns)
     tiers = {row.label: row.tier
-             for row in derive.position_rows(derive.source_frames(pnl)[0])}
+             for row in derive.position_rows(*derive.source_frames(pnl))}
 
     values = tuple(
         tuple(None if _is_missing(v) else float(v) for v in matrix.loc[label])
@@ -221,12 +221,13 @@ def spectrum_chart_doc(pnl, base='gross'):
     *between* two families, which is what ``support='atomic'`` says; the line a
     renderer draws across them is a trend, and the points are the readings.
     """
-    gini, _ = derive.source_frames(pnl)
+    gini, walk = derive.source_frames(pnl)
     order = derive.distortion_order(gini)
     actuals = derive.actuals_frame(pnl)
     matrix = derive.relativity_frame(actuals, base=base)
     families = [f'gini {d}' for d in order]
-    tiers = {row.label: row.tier for row in derive.position_rows(gini)}
+    tiers = {row.label: row.tier
+             for row in derive.position_rows(gini, walk)}
     x = tuple(float(i) for i in range(len(order)))
 
     series = tuple(

@@ -8,7 +8,9 @@ The one thing that is stable in practice is `aggregate_relativity.derive`, which
 
 ---
 
-## 0.6.0
+## 0.7.0
+
+**[Net-Of-Occ-Row] the page carries the net-of-occurrence book as a third reference row.** Where the program buys aggregate cover behind an occurrence tier, `classify_positions` emits a `net of occ` position: tier `'book'`, so it reads, colors and inverts like the gross book and the final net. The gate and the placement come off the walk's own `Net of occurrence` row (library `evaluation_df` from `aggregate` 1.0.0a387, the new floor), so the row lands with or without an occurrence package step, and its panel step is the running net after the last occurrence cover, the position the gini panel has always evaluated. `classify_positions` and `position_rows` now take `(gini, walk)`. The golden fixtures gain that one row in each case; every pre-existing number was verified byte-identical before recapture, so the regression's contract holds.
 
 **[Div-CoC-Net] follow the library's `Div CoC` rename; floor to `aggregate` 1.0.0a384.** Library a384 gave the margin walk a second, gross-anchored capital basis and renamed `evaluation_df`'s `Div CoC` to `Div CoC net`, which broke this plugin's exhibit and chart with a `KeyError` on the old name. `derive.actuals_frame` now reads `Div CoC net`: the same quantity, renamed at the source when its gross twin appeared. The page's own column stays `Div CoC`, keyed into the golden fixtures and both format tables, and documented as the net-anchored reading; whether the exhibit should also carry `Div CoC gross` is an open design question, not part of this fix. No number moves, so the golden regression stands uncaptured.
 

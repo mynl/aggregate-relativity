@@ -2,7 +2,7 @@
 
 Relative pricing of a reinsurance program, as an [`aggregate`](https://github.com/mynl/aggregate) plugin.
 
-For each cover an extended P&L's program buys, is it priced above or below the book's own acceptability? A position's `gini_p` is the distortion parameter at which that position breaks even, so a layer whose `gini_p` sits above the gross book's is priced above what the holder would itself charge, and buying it lowers the net. The page reads every position under four distortion families and three point estimates, which is how a verdict that survives the choice of family is told from one that depends on it.
+Is each cover in an extended P&L's program priced above or below the book's own implied gross leve (acceptability)? A position's `gini_p` is the distortion parameter at which that position breaks even on a stand-alone basis, so a layer whose `gini_p` sits above the gross book's is priced above what the holder would itself charge, and buying it lowers the net. Each position is priced under four or five distortion families (CoC, PH, Wang, dual, TVaR) interpreted as different risk appetites, and three point estimate of profitability (margin, margin-to-standard deviation, and vs a natural capital allocation).
 
 The plugin contributes documents to `aggregate` and nothing else: one exhibit (`Relativity: Table`) and two charts (`Grid`, the matrix, and `Chart`, the distortion spectrum). The first pill carries the plugin's name because Lab holds every installed plugin's leaves in one row. They appear in the `aggregate-api` app under its Lab tab with no change to either project. Installing this package adds the leaves; uninstalling removes them.
 
@@ -39,9 +39,9 @@ derive.relativity_frame(pnl)     # each cell as a multiple of the gross book's
 
 The exhibit reports itself **unavailable** for a plain P&L: without a `peel` clause there are no positions to price, so the app draws the leaf dark and shows why.
 
-## Versioning, and what is promised
+## Versioning and promises
 
-Nothing. This package registers into `aggregate.charts` and `aggregate.exhibits`, both provisional in the sense of [PEP 411](https://peps.python.org/pep-0411/), so it inherits their freedom to break at any minor release of the library. That is why the version starts at `0.1.0` rather than at `1.0.0`, and it is the honest statement rather than a placeholder.
+This package registers into `aggregate.charts` and `aggregate.exhibits`, both provisional in the sense of [PEP 411](https://peps.python.org/pep-0411/), so it inherits their freedom to break at any minor release of the library. No promises.
 
 Release notes are in `CHANGELOG.md`.
 

@@ -63,7 +63,17 @@ FINAL_GRID_STEP, FINAL_WALK_STEP = 'margin', 'All'
 OCCURRENCE_PACKAGE = 'All occurrence result'
 AGGREGATE_PACKAGE = 'All aggregate result'
 
+#: The net-of-occurrence position: the book once the occurrence program has
+#: worked, held mid-tower. The walk carries it under this step name since
+#: library ``1.0.0a387``; the gini panel has always evaluated the same
+#: position under its running-net name (``net through <last occ cover>``),
+#: which is found by position in the step order because the label embeds a
+#: cover's own name. Its label on the page, beside 'occ package'.
+NET_OF_OCC_WALK_STEP = 'Net of occurrence'
+NET_OF_OCC_LABEL = 'net of occ'
+
 _RESULT_SUFFIX = ' result'
+_RUNNING_NET_PREFIX = 'net through '
 
 #: The exhibit's columns after the four gini columns. ``Div CoC`` here is the
 #: page's own column name and stays, keyed into the golden fixtures and the
@@ -120,13 +130,17 @@ def distortion_order(gini):
     return sorted(DISTORTION_NAMES, key=lambda d: gini[(GROSS_GRID_STEP, d)])
 
 
-def classify_positions(gini):
-    """One :class:`Position` per cover the program buys, in peel order.
+def classify_positions(gini, walk):
+    """One :class:`Position` per cover the program buys, in peel order,
+    plus the net-of-occurrence book where the walk carries one.
 
     Parameters
     ----------
     gini : pandas.Series
         Indexed ``(Step, distortion)``; only its step sequence is read.
+    walk : pandas.DataFrame
+        The ratio walk, indexed by ``Step``; only its step order is read,
+        and only for the net-of-occurrence row.
 
     Returns
     -------
@@ -141,8 +155,18 @@ def classify_positions(gini):
     cover is an aggregate one, which is why the tier starts as ``'aggregate'`` in
     that case rather than being corrected afterwards.
 
-    ``net through <cover>`` steps are skipped. They are the running net after a
-    purchase, not a position anybody holds, so there is no price to judge.
+    ``net through <cover>`` steps are skipped, with one exception. A plain
+    running net is the cumulative position after a purchase rather than a
+    position anybody prices, so there is no verdict to give. The running net
+    after the **occurrence tier**, though, is the net-of-occurrence book, a
+    position the ledger, summary card and walk all carry in their own right;
+    where the program goes on to buy aggregate cover it appears here too, as
+    a third reference book. The walk is what says the ledger carries it (the
+    ``Net of occurrence`` row, library ``1.0.0a387``), which is why this
+    function takes it as well; its panel step is the running net after the
+    last occurrence cover, whose name the walk's own order supplies. The
+    insertion follows the walk: after the occurrence package where there is
+    one, directly after the tier's one cover otherwise.
     """
     steps = list(dict.fromkeys(gini.index.get_level_values('Step')))
     occurrence, aggregate = [], []
@@ -163,16 +187,31 @@ def classify_positions(gini):
     if AGGREGATE_PACKAGE in steps:
         out.append(Position('agg package', AGGREGATE_PACKAGE,
                             'All aggregate', 'aggregate_package'))
+    if NET_OF_OCC_WALK_STEP in walk.index:
+        wsteps = list(walk.index)
+        i = wsteps.index(NET_OF_OCC_WALK_STEP)
+        covers = [s for s in wsteps[:i] if s != GROSS_WALK_STEP
+                  and not s.startswith('All ')]
+        grid = f'{_RUNNING_NET_PREFIX}{covers[-1]}' if covers else ''
+        if grid in steps:
+            prior = wsteps[i - 1]
+            labels = [p.walk_step for p in out]
+            at = labels.index(prior) + 1 if prior in labels else len(out)
+            out.insert(at, Position(NET_OF_OCC_LABEL, grid,
+                                    NET_OF_OCC_WALK_STEP, 'book'))
     return out
 
 
-def position_rows(gini):
+def position_rows(gini, walk):
     """Every row of the page: the gross book, each position, the final net.
 
     Parameters
     ----------
     gini : pandas.Series
         Indexed ``(Step, distortion)``.
+    walk : pandas.DataFrame
+        The ratio walk, passed through to :func:`classify_positions` for the
+        net-of-occurrence row.
 
     Returns
     -------
@@ -181,7 +220,7 @@ def position_rows(gini):
         purchases move between.
     """
     return ([Position('gross book', GROSS_GRID_STEP, GROSS_WALK_STEP, 'book')]
-            + classify_positions(gini)
+            + classify_positions(gini, walk)
             + [Position('final net', FINAL_GRID_STEP, FINAL_WALK_STEP, 'book')])
 
 
@@ -238,7 +277,7 @@ def actuals_frame(pnl):
     gini, walk = source_frames(pnl)
     order = distortion_order(gini)
     records = {}
-    for row in position_rows(gini):
+    for row in position_rows(gini, walk):
         cr = float(walk.loc[row.walk_step, 'CR'])
         records[row.label] = (
             [float(gini[(row.grid_step, d)]) for d in order]

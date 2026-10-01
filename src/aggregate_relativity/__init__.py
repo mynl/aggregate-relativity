@@ -23,5 +23,5 @@ inherits their freedom to break at any minor release of the library. That is
 what the version below says, and why it does not start at 1.0.
 """
 
-__version__ = '0.6.0'
+__version__ = '0.7.0'
 __author__ = 'Stephen J. Mildenhall'
