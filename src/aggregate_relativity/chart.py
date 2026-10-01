@@ -159,6 +159,18 @@ _TIER_ROLES = {
 }
 
 
+#: Which **family** each tier belongs to, for the chart's grouping. The two
+#: packages ride with the covers they summarize, since a reader comparing the
+#: occurrence program wants its subtotal in the same family as its layers.
+_TIER_FAMILIES = {
+    'book': 'reference books',
+    'occurrence': 'occurrence',
+    'occurrence_package': 'occurrence',
+    'aggregate': 'aggregate',
+    'aggregate_package': 'aggregate',
+}
+
+
 def _series_role(label, tier):
     """The library series role for one position's curve."""
     if tier != 'book':
@@ -221,6 +233,11 @@ def spectrum_chart_doc(pnl, base='gross'):
         ChartSeries(
             name=label,
             role=_series_role(label, tiers.get(label, 'book')),
+            # The family a renderer gives one color ramp and one marker run to.
+            # Semantic: that a cover is an occurrence cover is a fact about the
+            # program, not a decision about color, and the renderer picks the
+            # ramp without needing to know what 'occurrence' means.
+            group=_TIER_FAMILIES[tiers.get(label, 'book')],
             panel_id='spectrum',
             x=x,
             y=tuple(float(matrix.loc[label, f]) for f in families),
@@ -243,7 +260,14 @@ def spectrum_chart_doc(pnl, base='gross'):
                       y_axis='multiple', read_axis='x',
                       title='Does the verdict survive the family?'),),
         series=series,
+        # ``role='base'`` is the declaration that this line divides the panel
+        # into dearer above and cheaper below. A renderer that knows the role
+        # washes the two halves; one that does not draws a plain rule and is
+        # still correct. Deliberately a **price** statement and not a verdict:
+        # above the base is dearer for everyone, where whether dearer is *good*
+        # depends on which side of the trade the row sits, which is the same
+        # trap ``MatrixData.row_polarity`` exists for on the grid.
         marks=(Mark(panel_id='spectrum', orient='h', at=1.0,
-                    label=base_label, faint=True),),
+                    label=base_label, role='base', faint=True),),
         meta={'base': base},
     )

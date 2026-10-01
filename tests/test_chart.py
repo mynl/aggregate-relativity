@@ -265,3 +265,25 @@ def test_the_net_base_flattens_the_final_net(pnl):
     doc = chart.spectrum_chart_doc(pnl, base='net')
     curve = next(s for s in doc.series if s.name == 'final net')
     assert list(curve.y) == pytest.approx([1.0] * 4)
+
+
+def test_the_curves_are_grouped_into_families(spectrum):
+    """So a renderer can give one color family to the occurrence covers.
+
+    Semantic, not a color: that a cover is an occurrence cover is a fact about
+    the program. The two packages ride with the covers they summarize, since a
+    reader comparing the occurrence program wants its subtotal beside its layers.
+    """
+    groups = {s.name: s.group for s in spectrum.series}
+    assert groups['gross book'] == 'reference books'
+    assert groups['final net'] == 'reference books'
+    assert groups['500x500'] == 'occurrence'
+    assert groups['occ package'] == 'occurrence'
+    assert groups['QS'] == 'aggregate'
+    assert len(set(groups.values())) == 3
+
+
+def test_the_base_mark_declares_its_role(spectrum):
+    """Which is what tells a renderer the panel has a dearer half and a cheaper one."""
+    mark, = spectrum.marks
+    assert mark.role == 'base'

@@ -8,6 +8,12 @@ The one thing that is stable in practice is `aggregate_relativity.derive`, which
 
 ---
 
+## 0.4.0
+
+**[Spectrum-Families] the spectrum's curves say which family they belong to, and its base line says it is the base.** Each series carries `ChartSeries.group` (`aggregate` `1.0.0a382`): `occurrence` for the occurrence layers and their package, `aggregate` for the aggregate covers and theirs, `reference books` for the gross book and the final net. A renderer gives one color family per group and varies the shade and marker within it, so eight curves that were eight points on one prop cycle now read as three sets. The grouping is semantic and carries no colors: that a cover is an occurrence cover is a fact about the program.
+
+The base mark carries `role='base'`, which is the declaration that the line divides the panel into dearer above and cheaper below. Deliberately a **price** statement and not a verdict: above the base is dearer for everyone, where whether dearer is *good* depends on which side of the trade a position sits, which is the same trap `row_polarity` exists for on the grid.
+
 ## 0.3.0
 
 **[Relativity-Spectrum] the second half of the original page: the distortion spectrum.** `chart.spectrum_chart_doc(pnl, base='gross'|'net')` emits an `xy` panel with the four families on a named category axis in the gross book's own order, the multiple on a log axis, one curve per position and a faint mark at 1.0. Registered as the `relativity_spectrum` chart. Where the grid answers "what is this cover's verdict", this answers "does the verdict survive the choice of family": a line that stays on one side of the base does, and one that crosses does not. On `Capstone.PnL` the `3x2` and `5x5` layers cross between `wang` and `dual`, so theirs do not.
