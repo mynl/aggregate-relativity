@@ -8,6 +8,10 @@ The one thing that is stable in practice is `aggregate_relativity.derive`, which
 
 ---
 
+## 0.6.0
+
+**[Div-CoC-Net] follow the library's `Div CoC` rename; floor to `aggregate` 1.0.0a384.** Library a384 gave the margin walk a second, gross-anchored capital basis and renamed `evaluation_df`'s `Div CoC` to `Div CoC net`, which broke this plugin's exhibit and chart with a `KeyError` on the old name. `derive.actuals_frame` now reads `Div CoC net`: the same quantity, renamed at the source when its gross twin appeared. The page's own column stays `Div CoC`, keyed into the golden fixtures and both format tables, and documented as the net-anchored reading; whether the exhibit should also carry `Div CoC gross` is an open design question, not part of this fix. No number moves, so the golden regression stands uncaptured.
+
 ## 0.5.0
 
 **[Leaf-Strings] the author's pass over every string the plugin shows.** The first pill now carries the plugin's name, `Relativity: Table`, and the other two stay bare. Lab holds every installed plugin's leaves in one row, so a run of unattributed words gives a reader no way to tell where one plugin's leaves end and the next begin; the first pill draws that line and repeating the name on all three would say it twice more for nothing.

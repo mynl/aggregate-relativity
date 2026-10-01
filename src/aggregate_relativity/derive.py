@@ -20,7 +20,9 @@ surface spells them almost identically:
 
 * :attr:`aggregate.PnL.evaluation_df`, a **property**, is the ratio walk. One
   row per step, carrying ``Premium spent``, ``Margin spent``, ``CR``, ``MSD``,
-  ``SA CoC`` and ``Div CoC``.
+  ``SA CoC`` and, since library ``1.0.0a384``, the pair ``Div CoC net`` and
+  ``Div CoC gross`` (the former spelled ``Div CoC`` before the gross-anchored
+  basis joined it).
 * ``PnL.evaluate().evaluation_df``, the frame on the **result** of the method, is
   the gini panel, indexed ``(Step, distortion)`` and carrying ``gini_p``.
 
@@ -63,7 +65,11 @@ AGGREGATE_PACKAGE = 'All aggregate result'
 
 _RESULT_SUFFIX = ' result'
 
-#: The exhibit's columns after the four gini columns.
+#: The exhibit's columns after the four gini columns. ``Div CoC`` here is the
+#: page's own column name and stays, keyed into the golden fixtures and the
+#: two format tables; its source is the walk's ``Div CoC net``, which was
+#: spelled ``Div CoC`` until library ``1.0.0a384`` added the gross-anchored
+#: twin. Same quantity, renamed at the source only.
 POINT_COLUMNS = ('CR', 'margin', 'MSD', 'SA CoC', 'Div CoC')
 
 #: The subset the relativity matrix scores. ``CR`` drops out because ``margin``
@@ -226,7 +232,8 @@ def actuals_frame(pnl):
         last. Columns are ``gini <family>`` for each family in
         :func:`distortion_order` order, then ``CR``, ``margin`` (which is
         ``1 - CR``), ``MSD`` signed per :func:`margin_sigma`, ``SA CoC`` and
-        ``Div CoC``.
+        ``Div CoC``, which is the walk's net-anchored ``Div CoC net`` under
+        the page's own name (see :data:`POINT_COLUMNS`).
     """
     gini, walk = source_frames(pnl)
     order = distortion_order(gini)
@@ -237,7 +244,7 @@ def actuals_frame(pnl):
             [float(gini[(row.grid_step, d)]) for d in order]
             + [cr, 1 - cr, margin_sigma(walk, row.walk_step),
                float(walk.loc[row.walk_step, 'SA CoC']),
-               float(walk.loc[row.walk_step, 'Div CoC'])])
+               float(walk.loc[row.walk_step, 'Div CoC net'])])
     columns = [f'gini {d}' for d in order] + list(POINT_COLUMNS)
     return pd.DataFrame.from_dict(records, orient='index', columns=columns)
 
