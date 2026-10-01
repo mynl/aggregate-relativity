@@ -8,6 +8,16 @@ The one thing that is stable in practice is `aggregate_relativity.derive`, which
 
 ---
 
+## 0.5.0
+
+**[Leaf-Strings] the author's pass over every string the plugin shows.** The first pill now carries the plugin's name, `Relativity: Table`, and the other two stay bare. Lab holds every installed plugin's leaves in one row, so a run of unattributed words gives a reader no way to tell where one plugin's leaves end and the next begin; the first pill draws that line and repeating the name on all three would say it twice more for nothing.
+
+The caption names the quantities precisely (`estimated combined ratio`, not `combined`) and ends on what the page is *for*: whether the determination depends on the choice of distortion, which is a proxy for risk appetite. The three hints are lowercase fragments, since the app renders one as `**Label**: hint` and a capital reads as a sentence colliding with the one before it. `why` drops its filler.
+
+`tests/test_register.py` no longer pins the label text, which made it fail on the one edit it should wave through. It reads the module constants and asserts the **shape** instead: all three distinct, the first starting with `TITLE` and no other doing so, every leaf carrying a hint, and every hint starting lowercase.
+
+The rules are written up as section 4a of `V:\dev\aggregate-plugin-recipe.md`, for the next plugin.
+
 ## 0.4.0
 
 **[Spectrum-Families] the spectrum's curves say which family they belong to, and its base line says it is the base.** Each series carries `ChartSeries.group` (`aggregate` `1.0.0a382`): `occurrence` for the occurrence layers and their package, `aggregate` for the aggregate covers and theirs, `reference books` for the gross book and the final net. A renderer gives one color family per group and varies the shade and marker within it, so eight curves that were eight points on one prop cycle now read as three sets. The grouping is semantic and carries no colors: that a cover is an occurrence cover is a fact about the program.

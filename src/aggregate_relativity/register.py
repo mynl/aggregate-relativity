@@ -3,8 +3,8 @@
 One zero-argument :func:`register`, named by ``pyproject.toml``'s
 ``[project.entry-points."aggregate.plugins"]`` and by ``AGGREGATE_PLUGINS`` for
 the no-packaging route. It performs the registry calls and returns the
-app-facing strings for what it registered: one exhibit and one chart, the same
-page read as a table and as a picture.
+app-facing strings for what it registered: one exhibit and two charts, the same
+page read as a table, as a grid and as a trend.
 
 Nothing here computes anything: the arithmetic is
 :mod:`aggregate_relativity.derive`, and this module is the thin seam between it
@@ -39,28 +39,34 @@ SPECTRUM_NAME = 'relativity_spectrum'
 
 TITLE = 'Relativity'
 
-#: What each leaf's pill says. One word each: they sit in a row, and the group
-#: is already called Lab and the plugin already called Relativity, so repeating
-#: either on every pill says nothing. The three are what the reader is choosing
+#: What each leaf's pill says, and the three are what the reader is choosing
 #: between: the numbers, the numbers laid out and colored, and the trend.
-EXHIBIT_LABEL = 'Table'
+#:
+#: **The first pill carries the plugin's name and the rest are bare.** Lab holds
+#: every installed plugin's leaves in one row, so a run of unattributed words
+#: gives a reader no way to tell where one plugin's leaves end and the next
+#: begin. The first pill of each plugin draws that line; repeating the name on
+#: all three would say it twice more for nothing.
+EXHIBIT_LABEL = f'{TITLE}: Table'
 CHART_LABEL = 'Grid'
 SPECTRUM_LABEL = 'Chart'
 
 CAPTION = (
-    'Each cover priced against the gross book, under four distortion families '
-    'and three point estimates. A position whose gini sits above the gross '
-    "book's is priced above the holder's own acceptability, so buying it lowers "
-    'the net; one below it raises the net. Reading four families at once is how '
-    'a verdict that survives the choice of family is told from one that does '
-    'not.'
+    'Stand-alone gini parameters under four distortion families, beside the '
+    'estimated combined ratio, margin and costs of capital. A position whose '
+    "gini is greater than the gross book's is priced above the holder's own "
+    'implied acceptability, so buying it lowers the net evaluation; one below '
+    'it raises the net. Reading all four families shows whether that '
+    'determination depends on the choice of distortion, which is a proxy for '
+    'risk appetite.'
 )
 
-WHY = 'needs an extended P&L, one built with a peel clause'
+WHY = 'needs an extended P&L built with a peel clause'
 
-#: Percentage formats for the two ratio columns. The gini columns are distortion
-#: parameters on their own scales and carry no unit, so they take the frame's
-#: default; ``MSD`` is a margin per unit of standard deviation and likewise.
+#: Percentage formats for the four ratio columns. The gini columns are
+#: distortion parameters on their own scales and carry no unit, so they take the
+#: frame's default; ``MSD`` is a margin per unit of standard deviation and
+#: likewise.
 FORMATTERS = {'CR': '.1%', 'margin': '.1%', 'SA CoC': '.1%', 'Div CoC': '.1%'}
 
 
@@ -156,13 +162,13 @@ def register():
                    predicate=_can_chart)
     return [
         PluginLeaf(name=EXHIBIT_NAME, kind='exhibit', label=EXHIBIT_LABEL,
-                   hint='each position with its own numbers, which is what '
-                        'the grid is built from',
+                   hint='statistics by position, the raw data underlying '
+                        'the grid',
                    why=WHY),
         PluginLeaf(name=CHART_NAME, kind='chart', label=CHART_LABEL,
-                   hint='each cover against the book, on a diverging scale',
+                   hint='each position relative to gross',
                    why=WHY),
         PluginLeaf(name=SPECTRUM_NAME, kind='chart', label=SPECTRUM_LABEL,
-                   hint='does the verdict survive the choice of family?',
+                   hint='sensitivity across the distortion families',
                    why=WHY),
     ]

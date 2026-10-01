@@ -89,17 +89,29 @@ def test_load_registers_the_exhibit_and_attributes_it(capstone_pnl):
                                       register_module.SPECTRUM_NAME}
 
         table, grid, picture = plugin.leaves
-        assert (table.name, table.kind, table.label) == (NAME, 'exhibit', 'Table')
+        # Read off the constants, never off their current text. Pinning the
+        # literals made this case fail the moment a label was reworded, which is
+        # the one edit it ought to wave through: what is worth asserting is that
+        # each leaf carries *its own* label, not what that label happens to say.
+        assert (table.name, table.kind, table.label) == (
+            NAME, 'exhibit', register_module.EXHIBIT_LABEL)
         assert (grid.name, grid.kind, grid.label) == (
-            register_module.CHART_NAME, 'chart', 'Grid')
+            register_module.CHART_NAME, 'chart', register_module.CHART_LABEL)
         assert (picture.name, picture.kind, picture.label) == (
-            register_module.SPECTRUM_NAME, 'chart', 'Chart')
-        # One word each, and all different: they sit in a row and the group is
-        # already called Lab.
+            register_module.SPECTRUM_NAME, 'chart', register_module.SPECTRUM_LABEL)
+        # All three distinct, and the first one names the plugin: Lab holds
+        # every installed plugin's leaves in one row, so the first pill is what
+        # tells a reader whose leaves these are.
         labels = [leaf.label for leaf in plugin.leaves]
         assert len(set(labels)) == 3
+        assert labels[0].startswith(register_module.TITLE)
+        assert not any(label.startswith(register_module.TITLE)
+                       for label in labels[1:])
         for leaf in plugin.leaves:
             assert leaf.why == register_module.WHY
+            assert leaf.hint, 'every leaf says what it shows'
+            # Lowercase fragments: the lede renders them as `**Label**: hint`.
+            assert leaf.hint[0].islower(), leaf.hint
 
         names = [n for n, _ in available_exhibits(capstone_pnl)]
         assert NAME in names
