@@ -16,7 +16,7 @@ The document it contributes: for each cover an extended P&L's program buys, is i
 
 Two consequences worth remembering, both already paid for:
 
-- The availability gate reads `len(pnl.evaluation_df) > 1`, **not** the library's private `_tower` flag and **not** `available_exhibits(pnl)`. The second would recurse: `available_exhibits` calls every exhibit's predicate, this one among them.
+- The availability gate reads `len(pnl.waterfall_df) > 1`, **not** the library's private `_tower` flag and **not** `available_exhibits(pnl)`. The second would recurse: `available_exhibits` calls every exhibit's predicate, this one among them. It read `pnl.evaluation_df` until 0.8.0, behind a `getattr` default that turned the library's removal of that property into a silently dark Lab tab; the gate now type-tests first and reads the walk undefended, so the next removal is loud.
 - A chart emitter hand-rolls its `singledispatch` base rather than calling the library's private `charts._emitter_base`.
 
 ## Commands

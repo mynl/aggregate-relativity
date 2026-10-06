@@ -26,6 +26,7 @@ from aggregate.exhibits import (
     EXHIBITS, Perspective, available_exhibits, exhibit_frames,
 )
 
+import aggregate_relativity
 from aggregate_relativity import derive, register as register_module
 
 from .programs import CAPSTONE, PLAIN
@@ -83,7 +84,12 @@ def test_load_registers_the_exhibit_and_attributes_it(capstone_pnl):
         plugin, = _load()
         assert plugin.ok, plugin.error
         assert plugin.name == 'relativity' and plugin.source == 'entry_point'
-        assert plugin.version == '0.1.0'
+        # Read off the package, never off a literal. Pinned to '0.1.0' this
+        # failed from 0.2.0 onward and stayed red through six bumps, which is
+        # how the suite stopped being run at all and how the a390 breakage got
+        # six versions of cover. What is worth asserting is that the loader
+        # reports the version the package declares, not what it happens to be.
+        assert plugin.version == aggregate_relativity.__version__
         assert plugin.exhibits == (NAME,)
         assert set(plugin.charts) == {register_module.CHART_NAME,
                                       register_module.SPECTRUM_NAME}

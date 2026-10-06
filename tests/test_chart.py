@@ -18,7 +18,7 @@ from aggregate.charts.ir import canonical_dict, doc_hash, load_chart_doc
 
 from aggregate_relativity import chart, derive
 
-from .programs import CAPSTONE, PLAIN
+from .programs import CAPSTONE, PLAIN, UNEVALUABLE_COVERS
 
 
 @pytest.fixture(scope='module')
@@ -287,3 +287,52 @@ def test_the_base_mark_declares_its_role(spectrum):
     """Which is what tells a renderer the panel has a dearer half and a cheaper one."""
     mark, = spectrum.marks
     assert mark.role == 'base'
+
+
+# --- a position the library could not evaluate (0.8.0) -----------------------
+
+@pytest.fixture(scope='module')
+def bargain():
+    """A tower whose covers are bought below their expected recoveries.
+
+    One position, the 200 xs 400 aggregate layer, has a non-positive expected
+    margin, so there is no breakeven acceptability level for it and the library
+    reports its gini as ``NaN`` across every family. The four approved programs
+    cannot show this: every cover in them is priced above its recoveries.
+    """
+    return build(UNEVALUABLE_COVERS)
+
+
+def test_the_fixture_really_does_carry_an_unevaluable_position(bargain):
+    """Guard the guard: if the library's pricing moves this case away, the test
+    below would pass for the wrong reason."""
+    actuals = derive.actuals_frame(bargain)
+    missing = actuals.index[actuals['gini ph'].isna()]
+    assert list(missing) == ['agg 200 xs 400']
+    assert actuals.loc['agg 200 xs 400', 'margin'] <= 0, 'which is why'
+
+
+def test_an_unevaluable_position_draws_no_curve(bargain):
+    """A chart cannot draw a number that does not exist.
+
+    The drop is **selective**: every other position keeps its curve, so this is
+    not an all-or-nothing bail out.
+    """
+    spectrum = chart.spectrum_chart_doc(bargain)
+    actuals = derive.actuals_frame(bargain)
+    drawn = [s.name for s in spectrum.series]
+    assert 'agg 200 xs 400' not in drawn
+    assert drawn == [p for p in actuals.index if p != 'agg 200 xs 400']
+
+
+def test_the_spectrum_survives_canonical_json(bargain):
+    """The bug this fixes, asserted where it bit.
+
+    Emitting the NaN raised ``ValueError: Out of range float values are not JSON
+    compliant`` out of ``canonical_json``, which every chart document goes
+    through to be stamped with its hash. The leaf answered 500.
+    """
+    spectrum = chart.spectrum_chart_doc(bargain)
+    assert doc_hash(spectrum)
+    for s in spectrum.series:
+        assert all(v == v for v in s.y), s.name

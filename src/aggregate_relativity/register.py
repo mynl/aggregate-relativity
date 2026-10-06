@@ -84,9 +84,22 @@ def _perspectives(pnl):
     ``economic_waterfall`` is present, which is how the original script decided
     this. That call loops over every exhibit's own predicate, this predicate
     among them, so it would recurse without end.
+
+    **The type test comes first, and the walk is then read undefended.** Through
+    0.7.0 this was one line, ``getattr(pnl, 'evaluation_df', None)``, which was
+    doing two jobs at once: tolerating the foreign types the *chart* predicate
+    sees (``register_chart`` takes no type list, so :func:`_can_chart` is asked
+    about every object the app builds), and supplying a default. When library
+    ``1.0.0a390`` removed that property the default swallowed the removal, and a
+    removed attribute became indistinguishable from "this object is not a P&L".
+    Every leaf went dark on every object, the plugin still loading cleanly and
+    reporting no error, so the only symptom was an empty Lab tab. Splitting the
+    two jobs keeps the tolerance and makes the next removal an ``AttributeError``
+    at the point of use, which is a thing a person can see.
     """
-    walk = getattr(pnl, 'evaluation_df', None)
-    if walk is None or len(walk) <= 1:
+    if not isinstance(pnl, PnL):
+        return []
+    if len(pnl.waterfall_df) <= 1:
         return []
     return [Perspective.RAW, Perspective.INSURER]
 

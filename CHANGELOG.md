@@ -8,6 +8,23 @@ The one thing that is stable in practice is `aggregate_relativity.derive`, which
 
 ---
 
+## 0.8.0
+
+**[Waterfall-Capital-Catchup] the Lab tab went dark at library `1.0.0a390` and this is the catch up.** `aggregate` a390 merged the margin walk into `PnL.waterfall_df` and **removed** the `evaluation_df` and `walk_df` properties, a breaking change on a stable-tier class. This package read the removed property in two places and the walk's old cost-of-capital column names in two more, so every one of its three leaves stopped claiming every object. Nothing announced it: the plugin still loaded, still reported `ok` and no error on `/v1/meta`, and simply offered nothing, so the only symptom was an empty Lab tab in `aggregate-api`.
+
+- `register._perspectives` and `derive.source_frames` read `PnL.waterfall_df`.
+- `derive.actuals_frame` reads `CoC standalone` and `CoC net`, renamed at a390 from `SA CoC` and `Div CoC net`. **No number moves**: a390 flipped the sign of the three *capital* columns, which this package never reads, and left every cost-of-capital figure unchanged. The golden regression passes uncaptured, which is the proof.
+- The page's own `SA CoC` and `Div CoC` columns are unchanged, as at 0.6.0: they are this package's vocabulary, keyed into the golden fixtures and both format tables, and only their source moved.
+- Floor raised to `aggregate>=1.0.0a390`.
+
+**The gate no longer hides a removal.** It was one line, `getattr(pnl, 'evaluation_df', None)`, doing two jobs: tolerating the foreign types the *chart* predicate sees, since `register_chart` takes no type list and is asked about every object the app builds, and supplying a default. When the library removed the property the default swallowed it, and a removed attribute became indistinguishable from "not a P&L". The gate now type-tests first and reads the walk undefended, so the next removal raises where it happens instead of greying a tab.
+
+**[Spectrum-Unevaluable] a position the library could not evaluate draws no curve.** Found while verifying the above, and independent of it: `evaluate()` reports a `NaN` gini for any position whose expected margin is non-positive, which is the ordinary case for a cover bought below its expected recoveries. The exhibit prints those cells as a dash and the matrix never reads the gini columns, so the spectrum was the one leaf that met them, and it emitted the `NaN` into the chart document. The IR's `canonical_json` sets `allow_nan=False`, correctly, so stamping the document raised `ValueError: Out of range float values are not JSON compliant` and the leaf answered HTTP 500.
+
+The spectrum now leaves such a position off the picture, which is what "no acceptability level" means on a chart, and the drop is selective: every other position keeps its curve. The four approved programs cannot reach this, every cover in them being priced above its recoveries, so `tests/programs.py` gains `UNEVALUABLE_COVERS`, a tower of bargains with exactly one unevaluable layer. It is **not** a golden case.
+
+**The version assertion stops being a literal.** `test_register` pinned `plugin.version == '0.1.0'` and had therefore been red since 0.2.0, through six bumps. That is how a suite stops being run, and how the a390 breakage got six versions of cover. It now reads `aggregate_relativity.__version__`, the same lesson the file already records three lines below it for leaf labels.
+
 ## 0.7.0
 
 **[Net-Of-Occ-Row] the page carries the net-of-occurrence book as a third reference row.** Where the program buys aggregate cover behind an occurrence tier, `classify_positions` emits a `net of occ` position: tier `'book'`, so it reads, colors and inverts like the gross book and the final net. The gate and the placement come off the walk's own `Net of occurrence` row (library `evaluation_df` from `aggregate` 1.0.0a387, the new floor), so the row lands with or without an occurrence package step, and its panel step is the running net after the last occurrence cover, the position the gini panel has always evaluated. `classify_positions` and `position_rows` now take `(gini, walk)`. The golden fixtures gain that one row in each case; every pre-existing number was verified byte-identical before recapture, so the regression's contract holds.

@@ -56,6 +56,27 @@ PNL_LOSS_RATIO = """xpnl PnLLossRatio
   peel top-down
 """
 
+#: A tower whose covers are bought **below** their expected recoveries, so every
+#: cover's expected margin is non-positive and ``evaluate()`` reports its gini as
+#: ``NaN``: there is no breakeven acceptability level for a position that does
+#: not expect to make money.
+#:
+#: Not a golden case, and deliberately so. It exists for one thing the four
+#: approved programs cannot show, every cover in them being priced above its
+#: recoveries: the spectrum has to leave an unevaluable position off the picture
+#: rather than emit a ``NaN`` that the chart IR's JSON refuses. See 0.8.0.
+UNEVALUABLE_COVERS = """xpnl Bargain.PnL
+  1000 premium
+  less
+    agg Bargain.Loss
+      1000 premium at 0.7 lr
+      sev 100 * lognorm 2
+      occurrence net of 100 xs 100 deposit 60 and 300 xs 200 deposit 40
+      poisson
+      aggregate net of 100 xs 300 deposit 25 and 200 xs 400 deposit 15
+  peel top-down
+"""
+
 #: A P&L with no peel clause: one margin row, an empty walk, no positions. The
 #: plugin's exhibit must report itself unavailable for it.
 PLAIN = """pnl PlainBook

@@ -4,7 +4,7 @@ build-backend = "setuptools.build_meta"
 
 [project]
 name = "aggregate-relativity"
-version = "0.7.0"
+version = "0.8.0"
 description = "Relative pricing of a reinsurance program, as an aggregate plugin: each cover scored against the gross book under four distortion families."
 readme = "README.md"
 requires-python = ">=3.13"
@@ -26,9 +26,11 @@ dependencies = [
     # this chart draws on at a379 with its off-scale fix at a380, and a384
     # renamed the walk's `Div CoC` to `Div CoC net`, which derive.py reads.
     # a387 put the `Net of occurrence` row on the walk, which the net-of-occ
-    # position reads, so that is the floor. No release on PyPI carries any of
-    # them: see [tool.uv.sources].
-    "aggregate>=1.0.0a387",
+    # position reads. a390 is the floor: it merged the walk into
+    # `PnL.waterfall_df`, REMOVED the `evaluation_df` and `walk_df` properties
+    # this package read, and renamed the three cost-of-capital columns. No
+    # release on PyPI carries any of them: see [tool.uv.sources].
+    "aggregate>=1.0.0a390",
     "pandas>=2.0",
 ]
 

@@ -18,13 +18,20 @@ Notes
 Two frames feed it, both public, and the distinction matters because the P&L
 surface spells them almost identically:
 
-* :attr:`aggregate.PnL.evaluation_df`, a **property**, is the ratio walk. One
+* :attr:`aggregate.PnL.waterfall_df`, a **property**, is the ratio walk. One
   row per step, carrying ``Premium spent``, ``Margin spent``, ``CR``, ``MSD``,
-  ``SA CoC`` and, since library ``1.0.0a384``, the pair ``Div CoC net`` and
-  ``Div CoC gross`` (the former spelled ``Div CoC`` before the gross-anchored
-  basis joined it).
+  ``CoC standalone`` and the pair ``CoC net`` and ``CoC gross``.
+
+  It answered to ``PnL.evaluation_df`` until library ``1.0.0a390``
+  ([Waterfall-Capital]), which merged it with ``walk_df``, **removed both
+  names**, and renamed the three cost-of-capital columns from ``SA CoC`` /
+  ``Div CoC net`` / ``Div CoC gross``. No value moved: that bump flipped the
+  sign of the three *capital* columns, which this package does not read, and
+  left every cost-of-capital figure unchanged to the last digit.
 * ``PnL.evaluate().evaluation_df``, the frame on the **result** of the method, is
-  the gini panel, indexed ``(Step, distortion)`` and carrying ``gini_p``.
+  the gini panel, indexed ``(Step, distortion)`` and carrying ``gini_p``. That
+  one never moved, and the near collision is why the property was retired: two
+  different frames answered to one name, a line apart in this module.
 
 The two index vocabularies differ, which is why a position carries both of its
 step names: the walk says ``500x500`` where the panel says ``500x500 result``.
@@ -75,11 +82,14 @@ NET_OF_OCC_LABEL = 'net of occ'
 _RESULT_SUFFIX = ' result'
 _RUNNING_NET_PREFIX = 'net through '
 
-#: The exhibit's columns after the four gini columns. ``Div CoC`` here is the
-#: page's own column name and stays, keyed into the golden fixtures and the
-#: two format tables; its source is the walk's ``Div CoC net``, which was
-#: spelled ``Div CoC`` until library ``1.0.0a384`` added the gross-anchored
-#: twin. Same quantity, renamed at the source only.
+#: The exhibit's columns after the four gini columns. ``SA CoC`` and ``Div CoC``
+#: here are the **page's own** column names and stay, keyed into the golden
+#: fixtures and the two format tables. Their sources are the walk's
+#: ``CoC standalone`` and ``CoC net``, which the library has renamed twice under
+#: this package: ``Div CoC`` gained the ``net`` qualifier at ``1.0.0a384`` when
+#: the gross-anchored twin joined it, and both took their present spellings at
+#: ``1.0.0a390``. Same quantities throughout, renamed at the source only, which
+#: is why no golden file moves with this.
 POINT_COLUMNS = ('CR', 'margin', 'MSD', 'SA CoC', 'Div CoC')
 
 #: The subset the relativity matrix scores. ``CR`` drops out because ``margin``
@@ -112,7 +122,7 @@ def source_frames(pnl):
         ``Step``.
     """
     return (pnl.evaluate().evaluation_df['gini_p'].astype(float),
-            pnl.evaluation_df)
+            pnl.waterfall_df)
 
 
 def distortion_order(gini):
@@ -271,7 +281,7 @@ def actuals_frame(pnl):
         last. Columns are ``gini <family>`` for each family in
         :func:`distortion_order` order, then ``CR``, ``margin`` (which is
         ``1 - CR``), ``MSD`` signed per :func:`margin_sigma`, ``SA CoC`` and
-        ``Div CoC``, which is the walk's net-anchored ``Div CoC net`` under
+        ``Div CoC``, which is the walk's net-anchored ``CoC net`` under
         the page's own name (see :data:`POINT_COLUMNS`).
     """
     gini, walk = source_frames(pnl)
@@ -282,8 +292,8 @@ def actuals_frame(pnl):
         records[row.label] = (
             [float(gini[(row.grid_step, d)]) for d in order]
             + [cr, 1 - cr, margin_sigma(walk, row.walk_step),
-               float(walk.loc[row.walk_step, 'SA CoC']),
-               float(walk.loc[row.walk_step, 'Div CoC net'])])
+               float(walk.loc[row.walk_step, 'CoC standalone']),
+               float(walk.loc[row.walk_step, 'CoC net'])])
     columns = [f'gini {d}' for d in order] + list(POINT_COLUMNS)
     return pd.DataFrame.from_dict(records, orient='index', columns=columns)
 

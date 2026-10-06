@@ -220,6 +220,12 @@ def spectrum_chart_doc(pnl, base='gross'):
     x axis is a genuine severity ordering rather than an alphabet. Nothing lives
     *between* two families, which is what ``support='atomic'`` says; the line a
     renderer draws across them is a trend, and the points are the readings.
+
+    **A position with no acceptability level draws no curve.** Those are the
+    positions whose expected margin is non-positive, which is the ordinary case
+    for a cover bought below its expected recoveries, and the library reports
+    their gini as ``NaN`` across every family. See the comment on the series
+    construction below.
     """
     gini, walk = derive.source_frames(pnl)
     order = derive.distortion_order(gini)
@@ -229,6 +235,21 @@ def spectrum_chart_doc(pnl, base='gross'):
     tiers = {row.label: row.tier
              for row in derive.position_rows(gini, walk)}
     x = tuple(float(i) for i in range(len(order)))
+
+    # A position the library could not evaluate carries no curve. `evaluate()`
+    # reports a NaN gini wherever a position has no breakeven acceptability
+    # level, which is any position whose expected margin is non-positive: a
+    # cover bought below its expected recoveries is the ordinary case, and the
+    # whole row is NaN across every family. The table prints those cells as a
+    # dash and the matrix never reads the gini columns, so the spectrum is the
+    # one leaf that meets them, and a chart cannot draw a number that does not
+    # exist. Emitting them anyway raised `ValueError: Out of range float values
+    # are not JSON compliant: nan` out of the IR's `canonical_json`, which is
+    # right to refuse: NaN is not JSON. So the position is absent, which is what
+    # "no acceptability level" means on a picture.
+    def curve(label):
+        ys = tuple(float(matrix.loc[label, f]) for f in families)
+        return ys if all(v == v for v in ys) else None
 
     series = tuple(
         ChartSeries(
@@ -241,9 +262,10 @@ def spectrum_chart_doc(pnl, base='gross'):
             group=_TIER_FAMILIES[tiers.get(label, 'book')],
             panel_id='spectrum',
             x=x,
-            y=tuple(float(matrix.loc[label, f]) for f in families),
+            y=ys,
         )
-        for label in matrix.index)
+        for label, ys in ((lbl, curve(lbl)) for lbl in matrix.index)
+        if ys is not None)
 
     base_label = 'gross book' if base == 'gross' else 'final net'
     return ChartDoc(
