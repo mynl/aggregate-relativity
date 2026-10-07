@@ -8,6 +8,18 @@ The one thing that is stable in practice is `aggregate_relativity.derive`, which
 
 ---
 
+## 0.9.0
+
+**[Margin-Ratio-Direct] the walk states the margin ratio now, so the page reads it instead of deriving it, and stops carrying the combined ratio at all.** `aggregate` `1.0.0a397` renamed `PnL.waterfall_df`'s `CR` column to `Margin ratio`, computed as `1 - CR` off the same block amounts. Without this the Lab tab breaks, loudly this time: `derive.actuals_frame` read `walk.loc[step, 'CR']` and a missing column is a `KeyError`, not a quiet `None`, which is the point of the undefended read 0.8.0 introduced.
+
+- `derive.actuals_frame` reads `Margin ratio` directly. **No number moves**: the column it populates was already `1 - cr`, so the golden regression passes with its approved values untouched, which is the proof.
+- `POINT_COLUMNS` drops `'CR'`, and so does `register.FORMATTERS`. The page carried both it and `margin`, which is `1 - CR`, and said so itself in a comment on `MATRIX_POINT_COLUMNS`: one fact twice. The library has now settled which of the two a margin walk states, so there is nothing left to say twice and nothing to drop at the matrix.
+- The five `reference/data/gini_view45_actuals*.csv` golden files lose the `CR` column and **nothing else**. The column was dropped from each file rather than the files being regenerated, so every remaining number still gates the change.
+- `test_relativity_drops_cr_and_sa_coc` is now `test_relativity_drops_sa_coc`, and additionally asserts that `CR` is absent from the actuals frame upstream of the matrix.
+- Floor raised to `aggregate>=1.0.0a397`.
+
+Requested by the `aggregate-api` 2026-10-07 punch list; plan `aggregate-api dev/plan-a198-punch-list.md`, batch [pnl-emphasis]. That plan names this bump `0.8.0`, which was already taken by [Waterfall-Capital-Catchup].
+
 ## 0.8.0
 
 **[Waterfall-Capital-Catchup] the Lab tab went dark at library `1.0.0a390` and this is the catch up.** `aggregate` a390 merged the margin walk into `PnL.waterfall_df` and **removed** the `evaluation_df` and `walk_df` properties, a breaking change on a stable-tier class. This package read the removed property in two places and the walk's old cost-of-capital column names in two more, so every one of its three leaves stopped claiming every object. Nothing announced it: the plugin still loaded, still reported `ok` and no error on `/v1/meta`, and simply offered nothing, so the only symptom was an empty Lab tab in `aggregate-api`.

@@ -19,7 +19,8 @@ Two frames feed it, both public, and the distinction matters because the P&L
 surface spells them almost identically:
 
 * :attr:`aggregate.PnL.waterfall_df`, a **property**, is the ratio walk. One
-  row per step, carrying ``Premium spent``, ``Margin spent``, ``CR``, ``MSD``,
+  row per step, carrying ``Premium spent``, ``Margin spent``, ``Margin ratio``,
+  ``MSD``,
   ``CoC standalone`` and the pair ``CoC net`` and ``CoC gross``.
 
   It answered to ``PnL.evaluation_df`` until library ``1.0.0a390``
@@ -90,12 +91,18 @@ _RUNNING_NET_PREFIX = 'net through '
 #: the gross-anchored twin joined it, and both took their present spellings at
 #: ``1.0.0a390``. Same quantities throughout, renamed at the source only, which
 #: is why no golden file moves with this.
-POINT_COLUMNS = ('CR', 'margin', 'MSD', 'SA CoC', 'Div CoC')
+#:
+#: ``CR`` was the first of these through ``0.8.0`` and is gone. The page carried
+#: both it and ``margin``, which is ``1 - CR``, and said so in a comment on
+#: :data:`MATRIX_POINT_COLUMNS`: one fact twice. The library settled it at
+#: ``1.0.0a397``, where the walk's own column became ``Margin ratio``, so the
+#: page reads the margin ratio directly instead of deriving it from a combined
+#: ratio it then had to carry.
+POINT_COLUMNS = ('margin', 'MSD', 'SA CoC', 'Div CoC')
 
-#: The subset the relativity matrix scores. ``CR`` drops out because ``margin``
-#: is ``1 - CR`` and scoring both carries one fact twice; ``SA CoC`` drops
-#: because a stand-alone cost of capital is not a quantity one purchase moves
-#: relative to the book.
+#: The subset the relativity matrix scores. ``SA CoC`` drops because a
+#: stand-alone cost of capital is not a quantity one purchase moves relative to
+#: the book.
 MATRIX_POINT_COLUMNS = ('margin', 'MSD', 'Div CoC')
 
 #: One row of the page. ``tier`` is ``'book'`` for the two reference rows,
@@ -279,19 +286,19 @@ def actuals_frame(pnl):
     pandas.DataFrame
         Indexed by position label in peel order, gross book first and final net
         last. Columns are ``gini <family>`` for each family in
-        :func:`distortion_order` order, then ``CR``, ``margin`` (which is
-        ``1 - CR``), ``MSD`` signed per :func:`margin_sigma`, ``SA CoC`` and
-        ``Div CoC``, which is the walk's net-anchored ``CoC net`` under
-        the page's own name (see :data:`POINT_COLUMNS`).
+        :func:`distortion_order` order, then ``margin``, the walk's own
+        ``Margin ratio``, ``MSD`` signed per :func:`margin_sigma`, ``SA CoC``
+        and ``Div CoC``, which is the walk's net-anchored ``CoC net`` under the
+        page's own name (see :data:`POINT_COLUMNS`).
     """
     gini, walk = source_frames(pnl)
     order = distortion_order(gini)
     records = {}
     for row in position_rows(gini, walk):
-        cr = float(walk.loc[row.walk_step, 'CR'])
         records[row.label] = (
             [float(gini[(row.grid_step, d)]) for d in order]
-            + [cr, 1 - cr, margin_sigma(walk, row.walk_step),
+            + [float(walk.loc[row.walk_step, 'Margin ratio']),
+               margin_sigma(walk, row.walk_step),
                float(walk.loc[row.walk_step, 'CoC standalone']),
                float(walk.loc[row.walk_step, 'CoC net'])])
     columns = [f'gini {d}' for d in order] + list(POINT_COLUMNS)

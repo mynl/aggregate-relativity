@@ -63,11 +63,11 @@ CAPTION = (
 
 WHY = 'needs an extended P&L built with a peel clause'
 
-#: Percentage formats for the four ratio columns. The gini columns are
+#: Percentage formats for the three ratio columns. The gini columns are
 #: distortion parameters on their own scales and carry no unit, so they take the
 #: frame's default; ``MSD`` is a margin per unit of standard deviation and
-#: likewise.
-FORMATTERS = {'CR': '.1%', 'margin': '.1%', 'SA CoC': '.1%', 'Div CoC': '.1%'}
+#: likewise. ``CR`` left with ``POINT_COLUMNS`` at ``0.9.0``.
+FORMATTERS = {'margin': '.1%', 'SA CoC': '.1%', 'Div CoC': '.1%'}
 
 
 def _perspectives(pnl):

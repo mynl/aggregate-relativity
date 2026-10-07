@@ -139,10 +139,17 @@ def test_relativity_reproduces_the_hand_computed_ratio(capstone_pnl):
         assert matrix.loc['QS', column] == pytest.approx(expected)
 
 
-def test_relativity_drops_cr_and_sa_coc(capstone_pnl):
-    """margin is 1 - CR, so scoring both says one thing twice."""
+def test_relativity_drops_sa_coc(capstone_pnl):
+    """A stand-alone cost of capital is not a quantity one purchase moves.
+
+    ``CR`` used to be dropped here too, being ``1 - margin``. Since 0.9.0 the
+    page does not carry it at all: the library's walk states the margin ratio
+    directly (``1.0.0a397``), so there is nothing to say twice and nothing to
+    drop.
+    """
     matrix = derive.relativity_frame(capstone_pnl)
     assert 'CR' not in matrix.columns and 'SA CoC' not in matrix.columns
+    assert 'CR' not in derive.actuals_frame(capstone_pnl).columns
     assert list(matrix.columns)[-3:] == list(derive.MATRIX_POINT_COLUMNS)
 
 
