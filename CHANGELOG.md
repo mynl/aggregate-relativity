@@ -8,6 +8,16 @@ The one thing that is stable in practice is `aggregate_relativity.derive`, which
 
 ---
 
+## 0.10.0
+
+**[Version-Source] the version is written once and read live.** Through 0.9.0 it lived in `pyproject.toml` and in a literal `__version__`, and the two drifted: 0.9.0 shipped with `__version__ = '0.8.0'`, which turned `test_register.py` red.
+
+- `__version__` in `src/aggregate_relativity/__init__.py` is the one source; `pyproject.toml` reads it (`dynamic = ["version"]`).
+- `[tool.uv] cache-keys` adds that file, so uv rebuilds the editable install when the version changes.
+- With `aggregate` 1.2.1 the plugin's reported version is this attribute, so the api's About panel shows the source's version rather than the one recorded at install.
+
+Plan: `dev/done/plan-0.10.0-version-source.md`, shared with aggregate, aggregate-api and aggregate-ntt.
+
 ## 0.9.0
 
 **[Margin-Ratio-Direct] the walk states the margin ratio now, so the page reads it instead of deriving it, and stops carrying the combined ratio at all.** `aggregate` `1.0.0a397` renamed `PnL.waterfall_df`'s `CR` column to `Margin ratio`, computed as `1 - CR` off the same block amounts. Without this the Lab tab breaks, loudly this time: `derive.actuals_frame` read `walk.loc[step, 'CR']` and a missing column is a `KeyError`, not a quiet `None`, which is the point of the undefended read 0.8.0 introduced.

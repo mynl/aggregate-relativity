@@ -12,7 +12,6 @@ resolution-markers = [
 
 [[package]]
 name = "aggregate"
-version = "1.0.0a395"
 source = { editable = "../../worktrees/aggregate_REFACTOR" }
 dependencies = [
     { name = "greater-tables" },
@@ -28,7 +27,7 @@ dependencies = [
 
 [package.metadata]
 requires-dist = [
-    { name = "aggregate", extras = ["notebook", "numba", "massive", "viz"], marker = "extra == 'all'" },
+    { name = "aggregate", extras = ["massive", "notebook", "numba", "viz"], marker = "extra == 'all'" },
     { name = "attrs", marker = "extra == 'notebook'" },
     { name = "bokeh", marker = "extra == 'viz'" },
     { name = "datashader", marker = "extra == 'viz'" },
@@ -52,7 +51,6 @@ requires-dist = [
     { name = "pyarrow", marker = "extra == 'dev'", specifier = ">=15" },
     { name = "pygments" },
     { name = "pytest", marker = "extra == 'dev'", specifier = ">=7" },
-    { name = "pytest-testmon", marker = "extra == 'dev'", specifier = ">=2" },
     { name = "pytest-xdist", marker = "extra == 'dev'", specifier = ">=3" },
     { name = "pyyaml", specifier = ">=6.0" },
     { name = "ruff", marker = "extra == 'dev'", specifier = ">=0.6" },
@@ -69,7 +67,6 @@ provides-extras = ["dev", "notebook", "numba", "massive", "viz", "all"]
 
 [[package]]
 name = "aggregate-relativity"
-version = "0.8.0"
 source = { editable = "." }
 dependencies = [
     { name = "aggregate" },

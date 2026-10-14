@@ -4,7 +4,11 @@ build-backend = "setuptools.build_meta"
 
 [project]
 name = "aggregate-relativity"
-version = "0.9.0"
+# Written once, as the literal `__version__` in
+# src/aggregate_relativity/__init__.py, and read from there by
+# [tool.setuptools.dynamic]. A bump edits that one line and touches no
+# environment.
+dynamic = ["version"]
 description = "Relative pricing of a reinsurance program, as an aggregate plugin: each cover scored against the gross book under four distortion families."
 readme = "README.md"
 requires-python = ">=3.13"
@@ -49,9 +53,20 @@ relativity = "aggregate_relativity.register:register"
 [tool.uv.sources]
 aggregate = { path = "../../worktrees/aggregate_REFACTOR", editable = true }
 
+# uv caches a local project's metadata keyed on pyproject.toml alone. With the
+# version dynamic it must also watch the file the version lives in, or a lock or
+# an install can carry the previous number.
+[tool.uv]
+cache-keys = [{ file = "pyproject.toml" }, { file = "src/aggregate_relativity/__init__.py" }]
+
 [tool.setuptools]
 package-dir = {"" = "src"}
 packages = ["aggregate_relativity"]
+
+# Read statically: setuptools parses the literal rather than importing the
+# package.
+[tool.setuptools.dynamic]
+version = { attr = "aggregate_relativity.__version__" }
 
 [tool.pytest.ini_options]
 testpaths = ["tests"]

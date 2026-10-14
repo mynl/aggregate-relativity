@@ -54,7 +54,7 @@ The material was authored on `X:`, which is wiped nightly, and this copy is the 
 
 SemVer from `0.1.0`, **a declared departure** from the house rule's "starting at 1.0.0". The reason is in `CHANGELOG.md`: this package registers into two PEP 411 provisional modules and inherits their freedom to break, so `1.0.0` would claim a stability nothing underneath it offers. The house rule exists to stop version numbers crawling, not to force a stability claim.
 
-Every capability change bumps the minor. `CHANGELOG.md` gets its section at the bump, never deferred. The version lives in **two** places that must agree: `pyproject.toml` and `src/aggregate_relativity/__init__.py`'s `__version__`.
+Every capability change bumps the minor. `CHANGELOG.md` gets its section at the bump, never deferred. The version is written in **one** place, the literal `__version__` in `src/aggregate_relativity/__init__.py`. `pyproject.toml` reads it from there (`dynamic = ["version"]`) and carries no version line. A bump edits that line and needs no sync: `aggregate.plugins` reports the live attribute, so an editable install is never stale.
 
 ## Commits
 

@@ -23,5 +23,8 @@ inherits their freedom to break at any minor release of the library. That is
 what the version below says, and why it does not start at 1.0.
 """
 
-__version__ = '0.8.0'
+# The one place the version is written. A plain literal on purpose: setuptools
+# reads it statically for the wheel, and aggregate.plugins reports it live, so
+# an editable install never reports a stale number after a bump.
+__version__ = "0.10.0"
 __author__ = 'Stephen J. Mildenhall'
