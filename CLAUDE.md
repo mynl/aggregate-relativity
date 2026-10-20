@@ -64,7 +64,8 @@ Claude commits version bumps, one bump per commit, as in the library. Subject is
 [Descriptive-Label] 0.2.0: terse summary of what landed
 ```
 
-**Never push.** Anything that does not bump is left uncommitted for the author.
+**Push with every commit** (house rule). Anything that does not bump is left uncommitted for
+the author.
 
 ## Plans
 
